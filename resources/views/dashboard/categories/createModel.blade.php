@@ -1,8 +1,6 @@
 
 <div id="createModel" class="modal fade" role="dialog">
     <div class="modal-dialog">
-
-        <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
             <h4 class="modal-title">Create Category</h4>
@@ -10,7 +8,6 @@
             </div>
             <div class="modal-body">
             <form id="createForm" enctype="multipart/form-data">
-                @csrf
                 <div class="form-group">
                     <label for="name">Name:</label>
                     <input type="text" class="form-control" id="name" name="name" required>
