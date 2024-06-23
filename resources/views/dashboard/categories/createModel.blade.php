@@ -11,6 +11,11 @@
                 <div class="form-group">
                     <label for="name">Name:</label>
                     <input type="text" class="form-control" id="name" name="name" required>
+                    @if($errors->get('name'))
+                    <div class="text-danger">
+                        {{$errors->first('name')}}
+                    </div>
+                    @endif
                 </div>
 
                 <div class="form-group">

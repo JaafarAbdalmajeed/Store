@@ -4,15 +4,13 @@
 
 @include('dashboard.categories.createModel')
 @include('dashboard.categories.editModel')
-
 <div class="mb-5">
-
+    <a href="{{route('category.index')}} " class="btn btn-primary btn-lg mb-3">back</a>
 </div>
 
 <div class="row">
     <div class="col-lg-12">
         <button type="button" class="btn btn-info btn-lg mb-3" data-toggle="modal" data-target="#createModel">Add Category</button>
-        <a href="{{ route('categories.trash')}}" class="btn btn-dark btn-lg mb-3">Trash</a>
             <div class="card" id="category-table">
 
             <table class="table table-bordered table-striped table-hover">
@@ -21,12 +19,10 @@
                         <th>Image</th>
                         <th>ID</th>
                         <th>Name</th>
-                        <th>Parent Category</th>
                         <th>Slug</th>
                         <th>Status</th>
                         <th>Description</th>
-                        <th>Created At</th>
-                        <th>Updated At</th>
+                        <th>Deleted At</th>
                         <th colspan="2">Actions</th>
                     </tr>
                 </thead>
@@ -36,27 +32,29 @@
                             <td><img src="{{ asset('storage/'.$category->image) }}" alt="Category Image" class="img-thumbnail" width="50" height="50"></td>
                             <td>{{ $category->id }}</td>
                             <td>{{ $category->name }}</td>
-                            <td>{{ $category->parent_id }}</td>
                             <td>{{ $category->slug }}</td>
                             <td>{{ $category->status }}</td>
                             <td>{{ $category->description }}</td>
-                            <td>{{ $category->created_at }}</td>
-                            <td>{{ $category->updated_at }}</td>
+                            <td>{{ $category->deleted_at }}</td>
                             <td>
-                                <button  type="button" data-toggle="modal"  data-target="#editModal" data-id="{{ $category->id }}">
-                                    <i class="fas fa-edit text-primary"></i>
-                                </button>
+                                <form action="{{ route('categories.restore', $category->id)}}" method="post">
+                                    @csrf
+                                    @method('put')
+                                    <button type="submit" class="btn btn-info btn-lg mb-3">Restore</button>
+                                </form>
                             </td>
 
                             <td>
-                                <button type="button" class="delete-category-btn" data-id="{{ $category->id }}">
-                                    <i class="fas fa-trash-alt text-danger"></i>
-                                </button>
+                                <form action="{{ route('categories.force-delete', $category->id)}}" method="post">
+                                    @csrf
+                                    @method('delete')
+                                    <button type="submit" class="btn btn-danger btn-lg mb-3">Delete</button>
+                                </form>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="text-center">No categories found</td>
+                            <td colspan="8" class="text-center">No categories found</td>
                         </tr>
                     @endforelse
                 </tbody>

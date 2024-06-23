@@ -46,7 +46,58 @@ $(document).ready(function () {
             }
         });
     }
-        loadTable();
+    $(document).on('click', '#pagination-links a', function(e) {
+        e.preventDefault();
+        var url = $(this).attr('href');
+        fetchCategories(url);
+    });
+
+    function fetchCategories(url) {
+        $.ajax({
+            url: url,
+            success: function(data) {
+                updateTable(data);
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", status, error);
+            }
+        });
+    }
+    function updateTable(data) {
+        if (data && data.categories) {
+            let categoriesTable = '';
+            data.categories.forEach(function(category) {
+                categoriesTable += `
+                    <tr>
+                        <td><img src="/storage/${category.image}" alt="Category Image" class="img-thumbnail" width="50" height="50"></td>
+                        <td>${category.id}</td>
+                        <td>${category.name}</td>
+                        <td>${category.parent_id}</td>
+                        <td>${category.slug}</td>
+                        <td>${category.status}</td>
+                        <td>${category.description}</td>
+                        <td>${category.created_at}</td>
+                        <td>${category.updated_at}</td>
+                        <td>
+                            <button type="button" class="edit-category-btn" data-id="${category.id}" data-toggle="modal" data-target="#editModal">
+                                <i class="fas fa-edit text-primary"></i>
+                            </button>
+                        </td>
+                        <td>
+                            <button type="button" class="delete-category-btn" data-id="${category.id}">
+                                <i class="fas fa-trash-alt text-danger"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+            });
+            $('tbody').html(categoriesTable);
+            $('#pagination-links').html(data.pagination); // Update pagination links
+        } else {
+            console.error("Invalid response format:", data);
+        }
+    }
+
+        // loadTable();
 
     $('#createForm').submit(function (e) {
         e.preventDefault();
@@ -68,11 +119,26 @@ $(document).ready(function () {
                 loadTable();
                 $('#createForm')[0].reset();
             },
-            error: function(error) {
+            error: function (error) {
+                let errorMessage = "An error occurred. Please try again.";
+
+                if (error.responseJSON && error.responseJSON.errors) {
+                    let errors = error.responseJSON.errors;
+                    errorMessage = '<ul style="list-style-type: none;">';
+                    for (let key in errors) {
+                        if (errors.hasOwnProperty(key)) {
+                            errors[key].forEach(msg => {
+                                errorMessage += `<li>${msg}</li>`;
+                            });
+                        }
+                    }
+                    errorMessage += '</ul>';
+                }
+
                 Swal.fire({
                     icon: 'error',
                     title: 'Error!',
-                    text: 'Failed to add category. Please try again later.',
+                    html: errorMessage, // use html to render the list
                     confirmButtonText: 'Okay'
                 });
             }
@@ -135,15 +201,21 @@ $(document).ready(function () {
                 $('#edit_image').attr('src', '/storage/' + response.image); // Adjusted path for image preview
                 $('#editModal').modal('show');
             },
-            error: function(error) {
+            error: function (error) {
+                let errorMessage = "Failed to fetch category data. Please try again later.";
+
+                if (error.responseJSON && error.responseJSON.message) {
+                    errorMessage = error.responseJSON.message;
+                }
+
                 Swal.fire({
                     icon: 'error',
                     title: 'Error!',
-                    text: 'Failed to fetch category data. Please try again later.',
+                    text: errorMessage,
                     confirmButtonText: 'Okay'
                 });
             }
-        });
+            });
     });
 
 
@@ -172,11 +244,26 @@ $(document).ready(function () {
                 $('#editModal').modal('hide');
                 $('#editForm')[0].reset();
             },
-            error: function(error) {
+            error: function (error) {
+                let errorMessage = "An error occurred. Please try again.";
+
+                if (error.responseJSON && error.responseJSON.errors) {
+                    let errors = error.responseJSON.errors;
+                    errorMessage = '<ul style="list-style-type: none;">';
+                    for (let key in errors) {
+                        if (errors.hasOwnProperty(key)) {
+                            errors[key].forEach(msg => {
+                                errorMessage += `<li>${msg}</li>`;
+                            });
+                        }
+                    }
+                    errorMessage += '</ul>';
+                }
+
                 Swal.fire({
                     icon: 'error',
                     title: 'Error!',
-                    text: 'Failed to update category. Please try again later.',
+                    html: errorMessage, // use html to render the list
                     confirmButtonText: 'Okay'
                 });
             }

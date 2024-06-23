@@ -190,7 +190,8 @@
       </div>
 
       <!-- Sidebar Menu -->
-      @include('layouts.partials.nav')
+      {{-- @include('layouts.partials.nav') --}}
+      <x-nav/>
       <!-- /.sidebar-menu -->
     </div>
     <!-- /.sidebar -->

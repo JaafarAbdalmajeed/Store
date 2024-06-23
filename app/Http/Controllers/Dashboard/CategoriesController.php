@@ -6,7 +6,9 @@ use App\Models\Category;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CategoryRequest;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class CategoriesController extends Controller
 {
@@ -15,10 +17,18 @@ class CategoriesController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
-        $categories = Category::all();
+        // Apply the `withTrashed` method on the query builder
+        $categories = Category::paginate(10);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'categories' => $categories->items(), // Extract items for current page
+                'pagination' => $categories->links()->toHtml() // Convert pagination links to HTML
+            ]);
+        }
+
         return view('dashboard.categories.index', compact('categories'));
     }
 
@@ -46,14 +56,25 @@ class CategoriesController extends Controller
      */
     public function store(Request $request)
     {
-        $request->merge([
-            'slug' => \Str::slug($request->name) // Use \Str instead of Str if the namespace is not imported
+        $validator = Validator::make($request->all(), Category::rules(), [
+            'required' => 'This field (:attribute) is required',
+            'name.unique' => 'This name already exists!'
         ]);
 
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation Error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $request->merge([
+            'slug' => Str::slug($request->name) // Use Str::slug
+        ]);
 
         $data = $request->except('image');
 
-        if($request->hasFile('image')){
+        if ($request->hasFile('image')) {
             $file = $request->file('image');
             $path = $file->store('category_images', 'public');
             $data['image'] = $path;
@@ -62,8 +83,9 @@ class CategoriesController extends Controller
         $category = Category::create($data);
 
         return response()->json([
-            'message' => 'Category created Successfully'
-        ]);
+            'message' => 'Category created Successfully',
+            'category' => $category
+        ], 201);
     }
 
     /**
@@ -96,8 +118,19 @@ class CategoriesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(CategoryRequest $request, $id)
     {
+        // $validator =$request->validate(Category::rules($id));
+        // $validator = Validator::make($request->all(), Category::rules($id));
+
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation Error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
         $category = Category::findOrFail($id);
 
         if ($request->hasFile('image')) {
@@ -131,9 +164,9 @@ class CategoriesController extends Controller
         $category = Category::findOrFail($id);
         $category->delete();
 
-        if($category->image) {
-            Storage::disk('public')->delete($category->image);
-        }
+        // if($category->image) {
+        //     Storage::disk('public')->delete($category->image);
+        // }
 
         return response()->json([
             'message' => 'Category deleted Successfully'
@@ -142,4 +175,33 @@ class CategoriesController extends Controller
 
 
     }
+
+    public function trash()
+    {
+        //
+        $categories = Category::onlyTrashed()->paginate(10); // Adjust the pagination limit as per your needs
+        return view('dashboard.categories.trash', compact('categories'));
+    }
+
+    public function restore(Request $request, $id)
+    {
+        $category = Category::onlyTrashed()->findOrFail($id);
+        $category->restore();
+        return redirect()->route('categories.trash')
+            ->with('success', "Category restored");
+    }
+
+    public function forceDelete(Request $request, $id)
+    {
+        $category = Category::onlyTrashed()->findOrFail($id);
+        $category->forceDelete();
+        if($category->image) {
+            Storage::disk('public')->delete($category->image);
+        }
+
+
+        return redirect()->route('categories.trash')
+            ->with('success', "Category deleted");
+    }
+
 }
