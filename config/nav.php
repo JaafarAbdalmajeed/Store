@@ -13,4 +13,11 @@ return [
         'title' => 'Categories',
         'badge' => 'New'
     ],
+
+    [
+        'icon' => 'nav-icon fas fa-th',
+        'route' => 'products.index',
+        'title' => 'Products',
+        'badge' => 'New'
+    ],
 ];

@@ -20,7 +20,14 @@ class CategoriesController extends Controller
     public function index(Request $request)
     {
         // Apply the `withTrashed` method on the query builder
-        $categories = Category::paginate(10);
+        $categories = Category::with('parent', 'products')
+        ->select('categories.*')
+        ->selectSub(function ($query) {
+            $query->from('products')
+                  ->selectRaw('COUNT(*)')
+                  ->whereColumn('category_id', 'categories.id');
+        }, 'products_count')
+        ->paginate(10);
 
         if ($request->ajax()) {
             return response()->json([
@@ -33,7 +40,8 @@ class CategoriesController extends Controller
     }
 
     public function fetchCategories() {
-        $categories = Category::all();
+        $categories = Category::with('parent', 'products')
+            ->paginate();
         return response()->json([
             'categories' => $categories
         ]);
@@ -94,9 +102,13 @@ class CategoriesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($categoryId)
     {
-        //
+        $category = Category::with('products.store')->findOrFail($categoryId);
+
+        return view('dashboard.categories.show', [
+            'category' => $category
+        ]);
     }
 
     /**

@@ -23,6 +23,7 @@
                         <th>Name</th>
                         <th>Parent Category</th>
                         <th>Slug</th>
+                        <th>Count products</th>
                         <th>Status</th>
                         <th>Description</th>
                         <th>Created At</th>
@@ -35,9 +36,10 @@
                         <tr>
                             <td><img src="{{ asset('storage/'.$category->image) }}" alt="Category Image" class="img-thumbnail" width="50" height="50"></td>
                             <td>{{ $category->id }}</td>
-                            <td>{{ $category->name }}</td>
-                            <td>{{ $category->parent_id }}</td>
+                            <td><a href="{{route('category.show', $category->id)}}">{{ $category->name }}</a></td>
+                            <td>{{ $category->parent? $category->parent->name : ''}}</td>
                             <td>{{ $category->slug }}</td>
+                            <td>{{ $category->products_count }}</td>
                             <td>{{ $category->status }}</td>
                             <td>{{ $category->description }}</td>
                             <td>{{ $category->created_at }}</td>
