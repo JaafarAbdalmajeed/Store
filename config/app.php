@@ -71,6 +71,8 @@ return [
 
     'timezone' => 'Asia/Amman',
 
+    'currency' => 'USD',
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration
@@ -176,6 +178,7 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+        App\Providers\CartServiceProvider::class
 
     ],
 
@@ -192,6 +195,7 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         // ...
+        'Currency' => App\Helpers\Currency::class,
     ])->toArray(),
 
 ];
